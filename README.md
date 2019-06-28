@@ -1,4 +1,4 @@
-###acra-poison-records-demo
+# acra-poison-records-demo
 
 This project illustrates how to use Acra's intrusion detection functionality (poison records).
 
@@ -8,7 +8,7 @@ of `SELECT *` requests. Upon passing AcraServer, they will inform it of untypica
 of using poison records is simple — to detect adversaries trying to download full tables / full database
 from the application server or trying to run full scans in their injected queries
 
-####How to run the demo
+## How to run the demo
 
 **1)** Use docker-compose command to set up and run the whole infrastructure:
 
@@ -42,7 +42,7 @@ If no errors, you should see:
 INFO[0000] Table has been successfully created           source="demo.go:65"
 ```
 
-**4)** Run demo application and insert some data (for example 10 rows) into the created table:
+**4)** Run demo application and insert some data (for example 10 rows) into the created table:#
 
 `go run demo/demo.go --insert 10`
 

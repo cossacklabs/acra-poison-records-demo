@@ -1,0 +1,83 @@
+version: "3"
+
+# Postgresql container
+services:
+  postgresql:
+    image: postgres:11
+    # INSECURE!!! You MUST define your own DB name and credentials
+    environment:
+      # Admin user
+      POSTGRES_USER: ${POSTGRES_USER:-test}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-test}
+      POSTGRES_DB: ${POSTGRES_DB:-test}
+
+    # Open the port outside for demonstration purposes only (connections
+    # between containers are performing within isolated networks)
+    ports:
+      - "5432:5432"
+
+  # Create key:
+  # - ./.acrakeys/acra-server/${ACRA_CLIENT_ID}_server
+  acra-keymaker_server:
+    # You can specify docker image tag in the environment
+    # variable ACRA_DOCKER_IMAGE_TAG or run by default with 'latest' images
+    image: "cossacklabs/acra-keymaker:${ACRA_DOCKER_IMAGE_TAG:-latest}"
+    environment:
+      # INSECURE!!! You MUST define your own ACRA_MASTER_KEY
+      # The default is only for testing purposes
+      ACRA_MASTER_KEY: ${ACRA_MASTER_KEY:-UHZ3VUNNeTJ0SEFhbWVjNkt4eDdVYkc2WnNpUTlYa0E=}
+    volumes:
+      # Mount the whole ./.acrakeys directory to be able generate keys and
+      # place them in services' subdirectories
+      - ./.acrakeys:/keys
+    # Please specify ACRA_CLIENT_ID environment variable, otherwise run with
+    # default 'testclientid' client id
+    command: >-
+      --client_id=${ACRA_CLIENT_ID:-poison_records_demo}
+      --generate_acraserver_keys
+      --generate_acrawriter_keys
+      --keys_output_dir=/keys/acra-server
+      --keys_public_output_dir=/keys/acra-server
+
+  # Create poison records:
+  acra-poisonrecordmaker:
+    # You can specify docker image tag in the environment
+    # variable ACRA_DOCKER_IMAGE_TAG or run by default with 'latest' images
+    build:
+      context: .
+      dockerfile: acra/acra-poisonrecordmaker.dockerfile
+    image: "cossacklabs/acra-poisonrecordmaker:${ACRA_DOCKER_IMAGE_TAG:-latest}"
+    environment:
+      # INSECURE!!! You MUST define your own ACRA_MASTER_KEY
+      # The default is only for testing purposes
+      ACRA_MASTER_KEY: ${ACRA_MASTER_KEY:-UHZ3VUNNeTJ0SEFhbWVjNkt4eDdVYkc2WnNpUTlYa0E=}
+    volumes:
+      # Mount the whole ./.acrakeys directory to be able generate keys and
+      # place them in services' subdirectories
+      - ./.acrakeys:/keys
+    command: >-
+      --keys_dir=/keys/acra-server
+
+  # Run AcraServer
+  acra-server:
+    image: "cossacklabs/acra-server:${ACRA_DOCKER_IMAGE_TAG:-latest}"
+    # Restart server after correct termination, for example after the config
+    # was changed through the API
+    depends_on:
+      - acra-keymaker_server
+      - postgresql
+    ports:
+      - "9393:9393"
+    environment:
+      # INSECURE!!! You MUST define your own ACRA_MASTER_KEY
+      # The default is only for testing purposes
+      ACRA_MASTER_KEY: ${ACRA_MASTER_KEY:-UHZ3VUNNeTJ0SEFhbWVjNkt4eDdVYkc2WnNpUTlYa0E=}
+    volumes:
+      - ./.acrakeys/acra-server:/keys
+      #Directory with configuration, rewriteable
+      - ./acra/configs:/config
+    command: >-
+      --config_file=/config/acra-server.yaml
+      --encryptor_config_file=/config/encryptor_config.yaml
+      --poison_shutdown_enable
+      --keys_dir=/keys

@@ -12,5 +12,5 @@ RUN ["/bin/bash", "-c", \
         --without-packing --without-clean"]
 
 # Copy precompiled acra binaries and configs
-COPY acra-poisonrecordmaker ./
+COPY acra/acra-poisonrecordmaker ./
 ENTRYPOINT ["./acra-poisonrecordmaker"]

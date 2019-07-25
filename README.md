@@ -1,6 +1,6 @@
 # What is this?
 
-Acra Poison Records Demo illustrates how to intrusion detection functionality of [Acra data protection suite](https://github.com/cossacklabs/acra). For intrusion detection Acra uses poison records, also known as honey tokens. This demo shows how to setup, configure and use intrusion detection of Acra.
+Acra Poison Records Demo illustrates how to use intrusion detection functionality of [Acra data protection suite](https://github.com/cossacklabs/acra). For intrusion detection Acra uses poison records, also known as honey tokens. This demo shows how to setup, configure and use intrusion detection of Acra.
 
 # How poison records work?
 

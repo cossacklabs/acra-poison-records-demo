@@ -1,12 +1,12 @@
 # What is this?
 
-Acra Poison Records Demo illustrates how to use intrusion detection functionality of [Acra data protection suite](https://github.com/cossacklabs/acra). For intrusion detection Acra uses poison records, also known as honey tokens. This demo shows how to setup, configure and use intrusion detection of Acra.
+Acra Poison Records Demo illustrates how to use intrusion detection functionality of [Acra data protection suite](https://github.com/cossacklabs/acra). For intrusion detection, Acra uses poison records, also known as honey tokens. This demo shows how to setup, configure, and use intrusion detection in Acra.
 
 # How poison records work?
 
-Poison records are records specifically designed to sit quietly in the database and not be queried by legitimate users under normal circumstances. They looks like any other encrypted records, and it's impossible to distinguish them from "normal data". Technically speaking, poison records is data (binary or strings, int, or whatever suits your database design), placed in particular tables / columns / cells.
+Poison records are records specifically designed to sit quietly in the database and not be queried by legitimate users under normal circumstances. They look like any other encrypted records, and it's impossible to distinguish them from "normal data". Technically speaking, poison records are data (binary or strings, int, or whatever suits your database design), placed in particular tables / columns / cells.
 
-However, poison records will only be included in the outputs of suspicious requests from malicious applications that read more data than they should, i.e. using `SELECT *` requests. The sole purpose of these requests is that when an unauthorised leakage occurs, poison records will be present in database response and detected by AcraServer. AcraServer will inform user (system administrator) of untypical behaviour, and can block suspricious request.
+However, poison records will only be included in the outputs of suspicious requests from malicious applications that read more data than they should, i.e. using `SELECT *` requests. The sole purpose of these requests is that when an unauthorised leakage occurs, poison records will be present in database response and detected by AcraServer. AcraServer will inform user (system administrator) of untypical behaviour and can block suspicious requests.
 
 
 Read blog posts:
@@ -60,9 +60,9 @@ If no errors occurred, you should see log that table was created:
 INFO[0000] Table has been successfully created           source="demo.go:65"
 ```
 
-### Fill in database table with data
+### Fill in the database table with data
 
-Insert some data into table by running client application again, for example, here we add 10 rows:
+Insert some data into the table by running client application again, for example, here we add 10 rows:
 
 ```bash
 go run demo/demo.go --insert 10
@@ -74,7 +74,7 @@ If no errors, you should see:
 INFO[0000] Insert has been successful                    source="demo.go:116"
 ```
 
-Client application adds some random data to the database, but AcraServer sits transparently between app and database, and encrypts all the data before storing in the database.
+Client application adds some random data to the database but AcraServer sits transparently between app and database and encrypts all the data before storing in the database.
 
 ### Read the database table (aka steal all data)
 
@@ -90,17 +90,17 @@ If no errors, you should see:
 INFO[0000] Select has been successful                    source="demo.go:151"
 ```
 
-Basically, we just downloaded all the content of the table, if we were attackers, we steal all the data successfully. As attackers we could use some SQL injection to perform `SELECT *` query.
+So we just downloaded all the content of the table. If we were attackers, we'd have successfully stolen all the data. As attackers, we could use some SQL injection to perform `SELECT *` query.
 
 ### Add poison records to prevent leak
 
-Now we will add poison record to the table to detect attack. Get the value of poison record data from the logs of exited `acra-poisonrecordmaker` container and then insert it into table:
+Now we will add poison record to the table to detect an attack. Get the value of poison record data from the logs of exited `acra-poisonrecordmaker` container and then insert it into a table:
 
 ```bash
 docker logs acra-poison-records-demo_acra-poisonrecordmaker_1
 ```
 
-If no errors, you should see base64 encoded value of poison record, it looks like encrypted data that we already have in the database (or like a garbage):
+If no errors, you should see base64 encoded value of poison record, it looks like encrypted data that we already have in the database (or like garbage):
 
 ```
 IiIiIiIiIiJVRUMyAAAALWSWDMcDH/+0AgCR2bsCZZW47bPtG+WtSD6Riq1PX/NxL1pCpeUgJwQmVAAAAAABAUAMAAAAEAAAACAAAABQeXSzlAcOIYtObhgHLTzGdCKFoEcoBJdtSjmxRtbTZplrFMQMTz15Ieww2FRBbSFN8sH0+pRmtjVxTEWEAAAAAAAAAAABAUAMAAAAEAAAAFgAAAB8UwNKO/MhI0ECetlJfELaqao/L1/WpvrEpGkol2h4MJIl4Mjo2CfEoAICOcJcbfeHPcKCCTtnUFgRhA4b0998U0j5bqBmmFvANHK0mPJMS37xWeLErxUtH/LgJ6ZdDYGg2/TkfS1+cxR/MLuJ93Nkrlf9VQ==
@@ -112,7 +112,7 @@ Copy poison record from your log of your `acra-poisonrecordmaker` and insert it 
 go run demo/demo.go --insert_poison IiIiIiIiIiJVRUMyAAAALWSWDMcDH/+0AgCR2bsCZZW47bPtG+WtSD6Riq1PX/NxL1pCpeUgJwQmVAAAAAABAUAMAAAAEAAAACAAAABQeXSzlAcOIYtObhgHLTzGdCKFoEcoBJdtSjmxRtbTZplrFMQMTz15Ieww2FRBbSFN8sH0+pRmtjVxTEWEAAAAAAAAAAABAUAMAAAAEAAAAFgAAAB8UwNKO/MhI0ECetlJfELaqao/L1/WpvrEpGkol2h4MJIl4Mjo2CfEoAICOcJcbfeHPcKCCTtnUFgRhA4b0998U0j5bqBmmFvANHK0mPJMS37xWeLErxUtH/LgJ6ZdDYGg2/TkfS1+cxR/MLuJ93Nkrlf9VQ==
 ```
 
-If no errors, you should see base64 encoded value of poison record:
+If no errors show, you should see base64 encoded value of poison record:
 
 ```
 INFO[0000] Poison record insert has been successful      source="demo.go:136"
@@ -120,7 +120,7 @@ INFO[0000] Poison record insert has been successful      source="demo.go:136"
 
 ### Try to steal data again
 
-Now we are protected from malicious `SELECT *` queries. Try to read all data again:
+Now we are protected from malicious `SELECT *` queries. Try to read all the data again:
 
 ```bash
 go run demo/demo.go --select

@@ -150,8 +150,6 @@ It means that AcraServer detected poison record and stopped working (shut down i
 
 # Further steps
 
-# Further steps
-
 Let us know if you have any questions by dropping an email to [dev@cossacklabs.com](mailto:dev@cossacklabs.com).
 
 1. [Acra features](https://cossacklabs.com/acra/) – check out full features set and available licenses.

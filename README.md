@@ -8,7 +8,7 @@ This project is one of numerous Acra's example applications. If you are curious 
 
 Poison records are records specifically designed to sit quietly in the database and not be queried by legitimate users under normal circumstances. They look like any other encrypted records, and it's impossible to distinguish them from "normal data". Technically speaking, poison records are data (binary or strings, int, or whatever suits your database design), placed in particular tables / columns / cells.
 
-However, poison records will only be included in the outputs of suspicious requests from malicious applications that read more data than they should, i.e. using `SELECT *` requests. The sole purpose of these requests is that when an unauthorised leakage occurs, poison records will be present in database response and detected by AcraServer. AcraServer will inform user (system administrator) of untypical behaviour and can block suspicious requests.
+However, poison records will only be included in the outputs of requests from malicious applications that read more data than they should, i.e. using `SELECT *` requests. The sole purpose of these requests is that when an unauthorised leakage occurs, poison records will be present in database response and detected by AcraServer. AcraServer will inform user (system administrator) of untypical behaviour and can block suspicious requests.
 
 
 Related blog posts and docs:

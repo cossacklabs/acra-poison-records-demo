@@ -1,6 +1,8 @@
 # What is this?
 
-Acra Poison Records Demo illustrates how to use intrusion detection functionality of [Acra data protection suite](https://github.com/cossacklabs/acra). For intrusion detection, Acra uses poison records, also known as honey tokens. This demo shows how to setup, configure, and use intrusion detection in Acra.
+Acra Poison Records Demo illustrates how to use intrusion detection functionality of [Acra data protection suite](https://cossacklabs.com/acra/). For intrusion detection, Acra uses poison records, also known as honey tokens. This demo shows how to setup, configure, and use intrusion detection in Acra.
+
+This project is one of numerous Acra's example applications. If you are curious about other Acra features, like transparent encryption, SQL firewall, load balancing support – [Acra Example Applications](https://github.com/cossacklabs/acra-engineering-demo/).
 
 # How poison records work?
 
@@ -9,7 +11,7 @@ Poison records are records specifically designed to sit quietly in the database 
 However, poison records will only be included in the outputs of suspicious requests from malicious applications that read more data than they should, i.e. using `SELECT *` requests. The sole purpose of these requests is that when an unauthorised leakage occurs, poison records will be present in database response and detected by AcraServer. AcraServer will inform user (system administrator) of untypical behaviour and can block suspicious requests.
 
 
-Read blog posts:
+Related blog posts and docs:
 
 - [Explain Like I’m Five: Poison Records (Honeypots for Database Tables)](https://hackernoon.com/poison-records-acra-eli5-d78250ef94f)
 - [Poison Records In Acra – Database Honeypots For Intrusion Detection](https://www.cossacklabs.com/blog/acra-poison-records.html)
@@ -148,9 +150,13 @@ It means that AcraServer detected poison record and stopped working (shut down i
 
 # Further steps
 
+# Further steps
+
 Let us know if you have any questions by dropping an email to [dev@cossacklabs.com](mailto:dev@cossacklabs.com).
 
-1. [cossacklabs/acra](https://github.com/cossacklabs/acra) – the main Acra repository contains tons of examples and documentation.
-2. Check dozens of Acra-based applications and configuration examples in [Acra Engineering Demo](https://github.com/cossacklabs/acra-engineering-demo/) repository.
-3. [Acra Live Demo](https://www.cossacklabs.com/acra/#acralivedemo) – is a web-based demo of a typical web-infrastructure protected by Acra and deployed on our servers for your convenience. It illustrates the other features of Acra, i.e. SQL firewall, intrusion detection, database rollback, and so on.
+1. [Acra features](https://cossacklabs.com/acra/) – check out full features set and available licenses.
+2. Other [Acra example applications](https://github.com/cossacklabs/acra-engineering-demo/) – try other Acra features, like transparent encryption, SQL firewall, load balancing support.
 
+# Need help?
+
+Need help in configuring Acra? Our support is available for [Acra Pro and Acra Enterprise versions](https://www.cossacklabs.com/acra/#pricing).

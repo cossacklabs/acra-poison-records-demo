@@ -9,11 +9,13 @@ import (
 	"encoding/hex"
 	"errors"
 	"flag"
-	_ "github.com/lib/pq"
-	"github.com/prometheus/common/log"
+	"fmt"
+	"log"
 	"math/rand"
 	"os"
 	"time"
+
+	_ "github.com/lib/pq"
 )
 
 const MAXRANDOM = 25
@@ -62,9 +64,8 @@ func main() {
 			log.Fatal(err)
 			return
 		}
-		log.Infoln("Table has been successfully created")
+		log.Println("Table has been successfully created")
 	}
-
 
 	if *dropTable {
 		_, err := db.Exec("DROP TABLE IF EXISTS test_table;")
@@ -77,12 +78,12 @@ func main() {
 			log.Fatal(err)
 			return
 		}
-		log.Infoln("Table has been successfully dropped")
+		log.Println("Table has been successfully dropped")
 	}
 
 	if *insertRandomValues > 1 {
 		if *insertRandomValues > MAXRANDOM {
-			log.Fatal("Too much to insert. Use value from range [1 .. " + string(MAXRANDOM) + "]")
+			log.Fatal("Too much to insert. Use value from range [1 .. " + fmt.Sprint(MAXRANDOM) + "]")
 			return
 		}
 
@@ -106,14 +107,14 @@ func main() {
 			userName := getRandomInput(r, usernames)
 			password := getRandomInput(r, passwords)
 			email := getRandomInput(r, emails)
-			_, err = db.Exec(`insert into test_table(username, password, email) values ('\x` + hex.EncodeToString(userName) + `', '\x` + hex.EncodeToString(password) + `', '\x` + hex.EncodeToString(email) + `')`);
+			_, err = db.Exec(`insert into test_table(username, password, email) values ('\x` + hex.EncodeToString(userName) + `', '\x` + hex.EncodeToString(password) + `', '\x` + hex.EncodeToString(email) + `')`)
 			if err != nil {
 				log.Fatal(err)
 				return
 			}
 		}
 
-		log.Infoln("Insert has been successful")
+		log.Println("Insert has been successful")
 	}
 
 	if *poisonRecordToInsert != "" {
@@ -128,12 +129,12 @@ func main() {
 			return
 		}
 
-		_, err = db.Exec(`insert into test_table(username, password, email) values ('poison_record', '\x` + hex.EncodeToString(value) + `', '\x` + hex.EncodeToString(value) + `')`);
+		_, err = db.Exec(`insert into test_table(username, password, email) values ('poison_record', '\x` + hex.EncodeToString(value) + `', '\x` + hex.EncodeToString(value) + `')`)
 		if err != nil {
 			log.Fatal(err)
 			return
 		}
-		log.Infoln("Poison record insert has been successful")
+		log.Println("Poison record insert has been successful")
 	}
 
 	if *selectAllFromTable {
@@ -148,10 +149,9 @@ func main() {
 			log.Fatal(err)
 			return
 		}
-		log.Infoln("Select has been successful")
+		log.Println("Select has been successful")
 	}
 }
-
 
 func getRandomInput(r *rand.Rand, from []string) []byte {
 	return []byte(from[r.Intn(MAXRANDOM)])
@@ -172,8 +172,6 @@ func loadFile(filename string) ([]string, error) {
 	return lines, nil
 }
 
-
-
 const (
 	// TagSymbol used in begin tag in AcraStruct
 	TagSymbol byte = '"'
@@ -185,7 +183,7 @@ const (
 	// length of 32 byte of symmetric key wrapped to smessage
 	SMessageKeyLength = 84
 	KeyBlockLength    = PublicKeyLength + SMessageKeyLength
-	DataLengthSize = 8
+	DataLengthSize    = 8
 )
 
 // TagBegin represents begin sequence of bytes for AcraStruct.
@@ -221,5 +219,3 @@ func getDataLengthFromAcraStruct(data []byte) int {
 	dataLengthBlock := data[getMinAcraStructLength()-DataLengthSize : getMinAcraStructLength()]
 	return int(binary.LittleEndian.Uint64(dataLengthBlock))
 }
-
-

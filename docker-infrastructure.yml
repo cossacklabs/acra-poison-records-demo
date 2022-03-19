@@ -44,10 +44,7 @@ services:
   acra-poisonrecordmaker:
     # You can specify docker image tag in the environment
     # variable ACRA_DOCKER_IMAGE_TAG or run by default with 'latest' images
-    build:
-      context: .
-      dockerfile: acra/acra-poisonrecordmaker.dockerfile
-    image: "cossacklabs/acra-poisonrecordmaker:${ACRA_DOCKER_IMAGE_TAG:-latest}"
+    image: "cossacklabs/acra-server:${ACRA_DOCKER_IMAGE_TAG:-latest}"
     environment:
       # INSECURE!!! You MUST define your own ACRA_MASTER_KEY
       # The default is only for testing purposes
@@ -56,8 +53,10 @@ services:
       # Mount the whole ./.acrakeys directory to be able generate keys and
       # place them in services' subdirectories
       - ./.acrakeys:/keys
+    entrypoint: "/acra-poisonrecordmaker"
     command: >-
       --keys_dir=/keys/acra-server
+
   # Run AcraServer
   acra-server:
     image: "cossacklabs/acra-server:${ACRA_DOCKER_IMAGE_TAG:-latest}"

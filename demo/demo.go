@@ -24,7 +24,7 @@ func main() {
 
 	createTable := flag.Bool("create", false, "create table in the database")
 	dropTable := flag.Bool("drop", false, "Drop current table from the database")
-	insertRandomValues := flag.Int("insert", -1, "insert N random values into the database")
+	insertRandomValues := flag.Int("insert", 0, "insert N random values into the database")
 	poisonRecordToInsert := flag.String("insert_poison", "", "insert poison record (should be in BASE64 format)")
 	selectAllFromTable := flag.Bool("select", false, "select all stored values from database")
 
@@ -81,7 +81,7 @@ func main() {
 		log.Println("Table has been successfully dropped")
 	}
 
-	if *insertRandomValues > 1 {
+	if *insertRandomValues > 0 {
 		if *insertRandomValues > MAXRANDOM {
 			log.Fatal("Too much to insert. Use value from range [1 .. " + fmt.Sprint(MAXRANDOM) + "]")
 			return

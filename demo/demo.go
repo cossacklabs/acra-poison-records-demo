@@ -12,6 +12,7 @@ import (
 	"math/rand"
 	"os"
 	"time"
+	"unicode/utf8"
 
 	_ "github.com/lib/pq"
 )
@@ -131,12 +132,26 @@ func main() {
 	}
 
 	if *selectAllFromTable {
-		result, err := db.Query("select * from test_table")
+		rows, err := db.Query("select * from test_table")
 		if err != nil {
 			log.Fatal(err)
 			return
 		}
-		result.Close()
+		type Row struct {
+			id       int
+			username []byte
+			password []byte
+			email    []byte
+		}
+		for rows.Next() {
+			var row Row
+			err := rows.Scan(&row.id, &row.username, &row.password, &row.email)
+			if err != nil {
+				log.Fatal(err)
+			}
+			fmt.Printf("%d\t%s\t%s\t%s\n", row.id, tryString(row.username), tryString(row.password), tryString(row.email))
+		}
+		rows.Close()
 		err = db.Ping()
 		if err != nil {
 			log.Fatal(err)
@@ -187,3 +202,13 @@ var (
 	ErrIncorrectAcraStructLength     = errors.New("AcraStruct has incorrect length")
 	ErrIncorrectAcraStructDataLength = errors.New("AcraStruct has incorrect data length value")
 )
+
+// tryString tries to convert byte slice into valid utf8 string
+// if conversion is unsuccessfull, the hex string is returned with leading '\x'
+func tryString(slice []byte) string {
+	utf := string(slice)
+	if utf8.ValidString(utf) {
+		return utf
+	}
+	return fmt.Sprintf("\\x%s", hex.EncodeToString(slice))
+}

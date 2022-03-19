@@ -2,10 +2,8 @@ package main
 
 import (
 	"bufio"
-	"bytes"
 	"database/sql"
 	"encoding/base64"
-	"encoding/binary"
 	"encoding/hex"
 	"errors"
 	"flag"
@@ -124,11 +122,6 @@ func main() {
 			return
 		}
 
-		if err := validateAcraStructLength(value); err != nil {
-			log.Fatal(err)
-			return
-		}
-
 		_, err = db.Exec(`insert into test_table(username, password, email) values ('poison_record', '\x` + hex.EncodeToString(value) + `', '\x` + hex.EncodeToString(value) + `')`)
 		if err != nil {
 			log.Fatal(err)
@@ -194,28 +187,3 @@ var (
 	ErrIncorrectAcraStructLength     = errors.New("AcraStruct has incorrect length")
 	ErrIncorrectAcraStructDataLength = errors.New("AcraStruct has incorrect data length value")
 )
-
-func getMinAcraStructLength() int {
-	return len(TagBegin) + KeyBlockLength + DataLengthSize
-}
-
-func validateAcraStructLength(data []byte) error {
-	baseLength := getMinAcraStructLength()
-	if len(data) < baseLength {
-		return ErrIncorrectAcraStructLength
-	}
-	if !bytes.Equal(data[:len(TagBegin)], TagBegin) {
-		return ErrIncorrectAcraStructTagBegin
-	}
-	dataLength := getDataLengthFromAcraStruct(data)
-	if dataLength != len(data[getMinAcraStructLength():]) {
-		return ErrIncorrectAcraStructDataLength
-	}
-	return nil
-}
-
-// getDataLengthFromAcraStruct unpack data length value from AcraStruct
-func getDataLengthFromAcraStruct(data []byte) int {
-	dataLengthBlock := data[getMinAcraStructLength()-DataLengthSize : getMinAcraStructLength()]
-	return int(binary.LittleEndian.Uint64(dataLengthBlock))
-}

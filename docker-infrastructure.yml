@@ -79,5 +79,6 @@ services:
     command: >-
       --config_file=/config/acra-server.yaml
       --encryptor_config_file=/config/encryptor_config.yaml
-      --poison_shutdown_enable
+      --poison_detect_enable=true
+      --poison_shutdown_enable=true
       --keys_dir=/keys

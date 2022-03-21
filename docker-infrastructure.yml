@@ -21,7 +21,7 @@ services:
   acra-keymaker_server:
     # You can specify docker image tag in the environment
     # variable ACRA_DOCKER_IMAGE_TAG or run by default with 'latest' images
-    image: "cossacklabs/acra-keymaker:${ACRA_DOCKER_IMAGE_TAG:-latest}"
+    image: "cossacklabs/acra-keymaker:${ACRA_DOCKER_IMAGE_TAG:-0.92.0}"
     environment:
       # INSECURE!!! You MUST define your own ACRA_MASTER_KEY
       # The default is only for testing purposes
@@ -34,19 +34,16 @@ services:
     # default 'testclientid' client id
     command: >-
       --client_id=${ACRA_CLIENT_ID:-poison_records_demo}
-      --generate_acraserver_keys
-      --generate_acrawriter_keys
+      --generate_symmetric_storage_key
       --keys_output_dir=/keys/acra-server
       --keys_public_output_dir=/keys/acra-server
+      --keystore=v1
 
   # Create poison records:
   acra-poisonrecordmaker:
     # You can specify docker image tag in the environment
     # variable ACRA_DOCKER_IMAGE_TAG or run by default with 'latest' images
-    build:
-      context: .
-      dockerfile: acra/acra-poisonrecordmaker.dockerfile
-    image: "cossacklabs/acra-poisonrecordmaker:${ACRA_DOCKER_IMAGE_TAG:-latest}"
+    image: "cossacklabs/acra-server:${ACRA_DOCKER_IMAGE_TAG:-0.92.0}"
     environment:
       # INSECURE!!! You MUST define your own ACRA_MASTER_KEY
       # The default is only for testing purposes
@@ -55,12 +52,14 @@ services:
       # Mount the whole ./.acrakeys directory to be able generate keys and
       # place them in services' subdirectories
       - ./.acrakeys:/keys
+    entrypoint: "/acra-poisonrecordmaker"
     command: >-
       --keys_dir=/keys/acra-server
+      --type=acrablock
 
   # Run AcraServer
   acra-server:
-    image: "cossacklabs/acra-server:${ACRA_DOCKER_IMAGE_TAG:-latest}"
+    image: "cossacklabs/acra-server:${ACRA_DOCKER_IMAGE_TAG:-0.92.0}"
     # Restart server after correct termination, for example after the config
     # was changed through the API
     depends_on:
@@ -79,5 +78,6 @@ services:
     command: >-
       --config_file=/config/acra-server.yaml
       --encryptor_config_file=/config/encryptor_config.yaml
-      --poison_shutdown_enable
+      --poison_detect_enable=true
+      --poison_shutdown_enable=true
       --keys_dir=/keys

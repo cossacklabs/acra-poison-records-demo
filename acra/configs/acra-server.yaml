@@ -1,6 +1,4 @@
-version: 0.85.0
-
-acraconnector_transport_encryption_disable: true
+version: 0.92.0
 
 client_id: poison_records_demo
 

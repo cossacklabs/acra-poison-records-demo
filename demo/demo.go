@@ -2,18 +2,19 @@ package main
 
 import (
 	"bufio"
-	"bytes"
 	"database/sql"
 	"encoding/base64"
-	"encoding/binary"
 	"encoding/hex"
 	"errors"
 	"flag"
-	_ "github.com/lib/pq"
-	"github.com/prometheus/common/log"
+	"fmt"
+	"log"
 	"math/rand"
 	"os"
 	"time"
+	"unicode/utf8"
+
+	_ "github.com/lib/pq"
 )
 
 const MAXRANDOM = 25
@@ -22,7 +23,7 @@ func main() {
 
 	createTable := flag.Bool("create", false, "create table in the database")
 	dropTable := flag.Bool("drop", false, "Drop current table from the database")
-	insertRandomValues := flag.Int("insert", -1, "insert N random values into the database")
+	insertRandomValues := flag.Int("insert", 0, "insert N random values into the database")
 	poisonRecordToInsert := flag.String("insert_poison", "", "insert poison record (should be in BASE64 format)")
 	selectAllFromTable := flag.Bool("select", false, "select all stored values from database")
 
@@ -62,9 +63,8 @@ func main() {
 			log.Fatal(err)
 			return
 		}
-		log.Infoln("Table has been successfully created")
+		log.Println("Table has been successfully created")
 	}
-
 
 	if *dropTable {
 		_, err := db.Exec("DROP TABLE IF EXISTS test_table;")
@@ -77,12 +77,12 @@ func main() {
 			log.Fatal(err)
 			return
 		}
-		log.Infoln("Table has been successfully dropped")
+		log.Println("Table has been successfully dropped")
 	}
 
-	if *insertRandomValues > 1 {
+	if *insertRandomValues > 0 {
 		if *insertRandomValues > MAXRANDOM {
-			log.Fatal("Too much to insert. Use value from range [1 .. " + string(MAXRANDOM) + "]")
+			log.Fatal("Too much to insert. Use value from range [1 .. " + fmt.Sprint(MAXRANDOM) + "]")
 			return
 		}
 
@@ -106,14 +106,14 @@ func main() {
 			userName := getRandomInput(r, usernames)
 			password := getRandomInput(r, passwords)
 			email := getRandomInput(r, emails)
-			_, err = db.Exec(`insert into test_table(username, password, email) values ('\x` + hex.EncodeToString(userName) + `', '\x` + hex.EncodeToString(password) + `', '\x` + hex.EncodeToString(email) + `')`);
+			_, err = db.Exec(`insert into test_table(username, password, email) values ('\x` + hex.EncodeToString(userName) + `', '\x` + hex.EncodeToString(password) + `', '\x` + hex.EncodeToString(email) + `')`)
 			if err != nil {
 				log.Fatal(err)
 				return
 			}
 		}
 
-		log.Infoln("Insert has been successful")
+		log.Println("Insert has been successful")
 	}
 
 	if *poisonRecordToInsert != "" {
@@ -123,35 +123,43 @@ func main() {
 			return
 		}
 
-		if err := validateAcraStructLength(value); err != nil {
-			log.Fatal(err)
-			return
-		}
-
-		_, err = db.Exec(`insert into test_table(username, password, email) values ('poison_record', '\x` + hex.EncodeToString(value) + `', '\x` + hex.EncodeToString(value) + `')`);
+		_, err = db.Exec(`insert into test_table(username, password, email) values ('poison_record', '\x` + hex.EncodeToString(value) + `', '\x` + hex.EncodeToString(value) + `')`)
 		if err != nil {
 			log.Fatal(err)
 			return
 		}
-		log.Infoln("Poison record insert has been successful")
+		log.Println("Poison record insert has been successful")
 	}
 
 	if *selectAllFromTable {
-		result, err := db.Query("select * from test_table")
+		rows, err := db.Query("select * from test_table")
 		if err != nil {
 			log.Fatal(err)
 			return
 		}
-		result.Close()
+		type Row struct {
+			id       int
+			username []byte
+			password []byte
+			email    []byte
+		}
+		for rows.Next() {
+			var row Row
+			err := rows.Scan(&row.id, &row.username, &row.password, &row.email)
+			if err != nil {
+				log.Fatal(err)
+			}
+			fmt.Printf("%d\t%s\t%s\t%s\n", row.id, tryString(row.username), tryString(row.password), tryString(row.email))
+		}
+		rows.Close()
 		err = db.Ping()
 		if err != nil {
 			log.Fatal(err)
 			return
 		}
-		log.Infoln("Select has been successful")
+		log.Println("Select has been successful")
 	}
 }
-
 
 func getRandomInput(r *rand.Rand, from []string) []byte {
 	return []byte(from[r.Intn(MAXRANDOM)])
@@ -172,8 +180,6 @@ func loadFile(filename string) ([]string, error) {
 	return lines, nil
 }
 
-
-
 const (
 	// TagSymbol used in begin tag in AcraStruct
 	TagSymbol byte = '"'
@@ -185,7 +191,7 @@ const (
 	// length of 32 byte of symmetric key wrapped to smessage
 	SMessageKeyLength = 84
 	KeyBlockLength    = PublicKeyLength + SMessageKeyLength
-	DataLengthSize = 8
+	DataLengthSize    = 8
 )
 
 // TagBegin represents begin sequence of bytes for AcraStruct.
@@ -197,29 +203,12 @@ var (
 	ErrIncorrectAcraStructDataLength = errors.New("AcraStruct has incorrect data length value")
 )
 
-func getMinAcraStructLength() int {
-	return len(TagBegin) + KeyBlockLength + DataLengthSize
-}
-
-func validateAcraStructLength(data []byte) error {
-	baseLength := getMinAcraStructLength()
-	if len(data) < baseLength {
-		return ErrIncorrectAcraStructLength
+// tryString tries to convert byte slice into valid utf8 string
+// if conversion is unsuccessfull, the hex string is returned with leading '\x'
+func tryString(slice []byte) string {
+	utf := string(slice)
+	if utf8.ValidString(utf) {
+		return utf
 	}
-	if !bytes.Equal(data[:len(TagBegin)], TagBegin) {
-		return ErrIncorrectAcraStructTagBegin
-	}
-	dataLength := getDataLengthFromAcraStruct(data)
-	if dataLength != len(data[getMinAcraStructLength():]) {
-		return ErrIncorrectAcraStructDataLength
-	}
-	return nil
+	return fmt.Sprintf("\\x%s", hex.EncodeToString(slice))
 }
-
-// getDataLengthFromAcraStruct unpack data length value from AcraStruct
-func getDataLengthFromAcraStruct(data []byte) int {
-	dataLengthBlock := data[getMinAcraStructLength()-DataLengthSize : getMinAcraStructLength()]
-	return int(binary.LittleEndian.Uint64(dataLengthBlock))
-}
-
-

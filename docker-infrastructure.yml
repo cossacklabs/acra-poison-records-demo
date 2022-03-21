@@ -35,7 +35,6 @@ services:
     command: >-
       --client_id=${ACRA_CLIENT_ID:-poison_records_demo}
       --generate_symmetric_storage_key
-      --generate_acrawriter_keys
       --keys_output_dir=/keys/acra-server
       --keys_public_output_dir=/keys/acra-server
       --keystore=v1
@@ -56,6 +55,7 @@ services:
     entrypoint: "/acra-poisonrecordmaker"
     command: >-
       --keys_dir=/keys/acra-server
+      --type=acrablock
 
   # Run AcraServer
   acra-server:

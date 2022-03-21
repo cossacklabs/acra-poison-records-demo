@@ -21,7 +21,7 @@ services:
   acra-keymaker_server:
     # You can specify docker image tag in the environment
     # variable ACRA_DOCKER_IMAGE_TAG or run by default with 'latest' images
-    image: "cossacklabs/acra-keymaker:${ACRA_DOCKER_IMAGE_TAG:-latest}"
+    image: "cossacklabs/acra-keymaker:${ACRA_DOCKER_IMAGE_TAG:-0.92.0}"
     environment:
       # INSECURE!!! You MUST define your own ACRA_MASTER_KEY
       # The default is only for testing purposes
@@ -43,7 +43,7 @@ services:
   acra-poisonrecordmaker:
     # You can specify docker image tag in the environment
     # variable ACRA_DOCKER_IMAGE_TAG or run by default with 'latest' images
-    image: "cossacklabs/acra-server:${ACRA_DOCKER_IMAGE_TAG:-latest}"
+    image: "cossacklabs/acra-server:${ACRA_DOCKER_IMAGE_TAG:-0.92.0}"
     environment:
       # INSECURE!!! You MUST define your own ACRA_MASTER_KEY
       # The default is only for testing purposes
@@ -59,7 +59,7 @@ services:
 
   # Run AcraServer
   acra-server:
-    image: "cossacklabs/acra-server:${ACRA_DOCKER_IMAGE_TAG:-latest}"
+    image: "cossacklabs/acra-server:${ACRA_DOCKER_IMAGE_TAG:-0.92.0}"
     # Restart server after correct termination, for example after the config
     # was changed through the API
     depends_on:

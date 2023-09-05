@@ -108,7 +108,7 @@ So we just downloaded all the content of the table. If we were attackers, we’d
 Now we will add poison record to the table to detect an attack. Get the value of poison record data from the logs of exited `acra-poisonrecordmaker` container and then insert it into a table:
 
 ```bash
-docker logs acra-poison-records-demo-acra-poisonrecordmaker-1
+docker logs acra-poison-records-demo_acra-poisonrecordmaker_1
 ```
 
 If no errors, you should see base64 encoded value of poison record, it looks like encrypted data that we already have in the database (or like garbage):

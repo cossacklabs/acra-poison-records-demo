@@ -1,7 +1,5 @@
-version: 0.92.0
+version: 0.95.0
 
 client_id: poison_records_demo
-
 db_host: postgresql
-
 db_port: 5432

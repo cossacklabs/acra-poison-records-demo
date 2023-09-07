@@ -3,7 +3,7 @@ version: "3"
 # Postgresql container
 services:
   postgresql:
-    image: postgres:11
+    image: postgres:12
     # INSECURE!!! You MUST define your own DB name and credentials
     environment:
       # Admin user
